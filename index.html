@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Organizer</title>
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="script.js"></script>
+    <script
+      defer
+      src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"
+    ></script>
+    <script
+      defer
+      src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <h1>Recipe Organizer</h1>
+      <button id="addRecipeBtn">Add Recipe</button>
+    </header>
+    <main>
+      <section id="recipeList">
+        <!-- Recipes will be displayed here -->
+      </section>
+    </main>
+
+    <!-- Modal for Adding Recipes -->
+    <div id="recipeModal" class="modal" aria-hidden="true" role="dialog">
+      <div class="modal-content">
+        <button class="close" aria-label="Close modal">&times;</button>
+        <h2>Add New Recipe</h2>
+        <input type="text" id="recipeTitle" placeholder="Recipe Title" />
+        <textarea id="recipeIngredients" placeholder="Ingredients"></textarea>
+        <textarea id="recipeInstructions" placeholder="Instructions"></textarea>
+        <button id="saveRecipe">Save Recipe</button>
+      </div>
+    </div>
+  </body>
+</html>
