@@ -122,3 +122,75 @@ function deleteRecipe(id) {
         });
     }
 }
+
+function searchRecipes() {
+    const searchValue = document.getElementById("searchInput").value.toLowerCase();
+    const recipeItems = document.querySelectorAll(".recipe-item");
+
+    recipeItems.forEach(recipe => {
+        const title = recipe.querySelector("h3").innerText.toLowerCase();
+        const ingredients = recipe.querySelector("p").innerText.toLowerCase();
+
+        if (title.includes(searchValue) || ingredients.includes(searchValue)) {
+            recipe.style.display = "block";
+        } else {
+            recipe.style.display = "none";
+        }
+    });
+}
+
+function filterRecipes() {
+    const selectedCategory = document.getElementById("filterCategory").value;
+    const recipeItems = document.querySelectorAll(".recipe-item");
+
+    recipeItems.forEach(recipe => {
+        const category = recipe.getAttribute("data-category");
+
+        if (selectedCategory === "all" || category === selectedCategory) {
+            recipe.style.display = "block";
+        } else {
+            recipe.style.display = "none";
+        }
+    });
+}
+
+function toggleFavorite(id) {
+    const recipeRef = ref(db, "recipes/" + id);
+    get(recipeRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            const recipe = snapshot.val();
+            const updatedFavoriteStatus = !recipe.favorite;
+
+            update(recipeRef, { favorite: updatedFavoriteStatus }).then(() => {
+                alert(updatedFavoriteStatus ? "Added to favorites!" : "Removed from favorites!");
+                loadRecipes();
+            });
+        }
+    });
+}
+
+function showFavorites() {
+    get(ref(db, "recipes")).then((snapshot) => {
+        const recipeList = document.getElementById("recipeList");
+        recipeList.innerHTML = "";
+
+        if (snapshot.exists()) {
+            snapshot.forEach((childSnapshot) => {
+                const recipe = childSnapshot.val();
+                if (recipe.favorite) {
+                    const recipeDiv = document.createElement("div");
+                    recipeDiv.classList.add("recipe-item");
+                    recipeDiv.innerHTML = `
+                        <h3>${recipe.title}</h3>
+                        <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
+                        <p><strong>Instructions:</strong> ${recipe.instructions}</p>
+                        <button onclick="editRecipe('${recipe.id}')">Edit</button>
+                        <button onclick="deleteRecipe('${recipe.id}')">Delete</button>
+                        <button onclick="toggleFavorite('${recipe.id}')">${recipe.favorite ? "⭐ Remove" : "☆ Add to favorites"}</button>
+                    `;
+                    recipeList.appendChild(recipeDiv);
+                }
+            });
+        }
+    });
+}
