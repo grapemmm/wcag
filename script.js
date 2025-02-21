@@ -55,7 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("recipeModal").style.display = "flex";
     });
 
-    document.querySelector(".close").addEventListener("click", closeModal);
+    const closeButton = document.querySelector(".close");
+    if (closeButton) {
+        closeButton.addEventListener("click", closeModal);
+    }
+
     window.addEventListener("click", (e) => {
         if (e.target === document.getElementById("recipeModal")) {
             closeModal();
@@ -147,4 +151,3 @@ function toggleFavorite(id) {
         }
     });
 }
-
