@@ -1,5 +1,6 @@
+export {}; // Делаем файл модулем, чтобы избежать ошибок
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
 import { getDatabase, ref, set, get, push, update, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 
@@ -19,88 +20,47 @@ const db = getDatabase(app);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-// Авторизация через Google
-document.getElementById("loginBtn").addEventListener("click", () => {
-    signInWithPopup(auth, provider)
-        .then((result) => {
-            alert(`Welcome, ${result.user.displayName}!`);
-        })
-        .catch((error) => {
-            console.error("Login error:", error);
-        });
-});
-
-// Выход из аккаунта
-document.getElementById("logoutBtn").addEventListener("click", () => {
-    signOut(auth).then(() => {
-        alert("Logged out!");
-    });
-});
-
 // Проверка аутентификации пользователя
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        document.getElementById("loginBtn").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "block";
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("mainPage").style.display = "block";
         loadRecipes();
     } else {
-        document.getElementById("loginBtn").style.display = "block";
-        document.getElementById("logoutBtn").style.display = "none";
-        document.getElementById("recipeList").innerHTML = "<p>Please log in to see recipes.</p>";
+        document.getElementById("loginPage").style.display = "block";
+        document.getElementById("mainPage").style.display = "none";
     }
 });
 
+// Авторизация через Google
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("addRecipeBtn").addEventListener("click", () => {
-        document.getElementById("recipeModal").style.display = "flex";
+    document.getElementById("loginBtn").addEventListener("click", () => {
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                console.log("User signed in:", result.user);
+                alert(`Welcome, ${result.user.displayName}!`);
+            })
+            .catch((error) => {
+                console.error("Login error:", error.message);
+                alert("Login failed: " + error.message);
+            });
     });
 
-    const closeButton = document.querySelector(".close");
-    if (closeButton) {
-        closeButton.addEventListener("click", closeModal);
-    }
-
-    window.addEventListener("click", (e) => {
-        if (e.target === document.getElementById("recipeModal")) {
-            closeModal();
-        }
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        signOut(auth).then(() => {
+            alert("Logged out!");
+        }).catch((error) => {
+            console.error("Logout error:", error.message);
+            alert("Logout failed: " + error.message);
+        });
     });
 });
 
-function closeModal() {
-    document.getElementById("recipeModal").style.display = "none";
-}
-
-function saveRecipe(id = null) {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Please log in to add recipes!");
-        return;
-    }
-
-    const title = document.getElementById("recipeTitle").value;
-    const ingredients = document.getElementById("recipeIngredients").value;
-    const instructions = document.getElementById("recipeInstructions").value;
-
-    if (!title || !ingredients || !instructions) {
-        alert("Please fill out all fields.");
-        return;
-    }
-
-    const recipeRef = id ? ref(db, `users/${user.uid}/recipes/${id}`) : push(ref(db, `users/${user.uid}/recipes`));
-    
-    set(recipeRef, {
-        id: id || recipeRef.key,
-        title,
-        ingredients,
-        instructions,
-        owner: user.uid
-    }).then(() => {
-        alert(id ? "Recipe updated successfully!" : "Recipe added successfully!");
-        closeModal();
-        loadRecipes();
-    });
-}
+// Подключаем обработчики кнопок после загрузки DOM
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("showFavoritesBtn").addEventListener("click", showFavorites);
+    document.getElementById("askAIBtn").addEventListener("click", askAI);
+});
 
 function loadRecipes() {
     const user = auth.currentUser;
@@ -127,27 +87,6 @@ function loadRecipes() {
             });
         } else {
             recipeList.innerHTML = "<p>No recipes found.</p>";
-        }
-    });
-}
-
-function toggleFavorite(id) {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Please log in to add favorites!");
-        return;
-    }
-
-    const recipeRef = ref(db, `users/${user.uid}/recipes/${id}`);
-    get(recipeRef).then((snapshot) => {
-        if (snapshot.exists()) {
-            const recipe = snapshot.val();
-            const updatedFavoriteStatus = !recipe.favorite;
-
-            update(recipeRef, { favorite: updatedFavoriteStatus }).then(() => {
-                alert(updatedFavoriteStatus ? "Added to favorites!" : "Removed from favorites!");
-                loadRecipes();
-            });
         }
     });
 }
