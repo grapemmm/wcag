@@ -14,50 +14,39 @@
       defer
       src="https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js"
     ></script>
+    <script
+      defer
+      src="https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js"
+    ></script>
+    <script
+      defer
+      src="https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js"
+    ></script>
   </head>
   <body>
     <header>
       <h1>Recipe Organizer</h1>
       <button id="addRecipeBtn">Add Recipe</button>
-    </header>
-
-    <header>
-      <h1>Recipe Organizer</h1>
       <button id="loginBtn">Sign in with Google</button>
       <button id="logoutBtn" style="display: none">Logout</button>
     </header>
 
     <main>
-      <!-- Поиск -->
       <input
         type="text"
         id="searchInput"
         placeholder="Search recipes..."
         onkeyup="searchRecipes()"
-        aria-label="Search recipes"
       />
-
-      <!-- Фильтр по категориям -->
-      <select
-        id="filterCategory"
-        onchange="filterRecipes()"
-        aria-label="Filter recipes by category"
-      >
+      <select id="filterCategory" onchange="filterRecipes()">
         <option value="all">All</option>
         <option value="breakfast">Breakfast</option>
         <option value="lunch">Lunch</option>
         <option value="dinner">Dinner</option>
         <option value="dessert">Dessert</option>
       </select>
-
-      <!-- Кнопка показа избранных рецептов -->
-      <button onclick="showFavorites()" aria-label="Show only favorite recipes">
-        Show Favorites
-      </button>
-
-      <section id="recipeList">
-        <!-- Recipes will be displayed here -->
-      </section>
+      <button onclick="showFavorites()">Show Favorites</button>
+      <section id="recipeList"></section>
     </main>
 
     <section id="chatSection">
@@ -66,10 +55,11 @@
       <div id="chatResponse"></div>
     </section>
 
-    <!-- Modal for Adding Recipes -->
     <div id="recipeModal" class="modal" aria-hidden="true" role="dialog">
       <div class="modal-content">
-        <button class="close" aria-label="Close modal">&times;</button>
+        <button class="close" aria-label="Close modal" onclick="closeModal()">
+          &times;
+        </button>
         <h2>Add New Recipe</h2>
         <input type="text" id="recipeTitle" placeholder="Recipe Title" />
         <textarea id="recipeIngredients" placeholder="Ingredients"></textarea>
