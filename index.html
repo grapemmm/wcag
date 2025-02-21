@@ -21,6 +21,12 @@
       <button id="addRecipeBtn">Add Recipe</button>
     </header>
 
+    <header>
+      <h1>Recipe Organizer</h1>
+      <button id="loginBtn">Sign in with Google</button>
+      <button id="logoutBtn" style="display: none">Logout</button>
+    </header>
+
     <main>
       <!-- Поиск -->
       <input
@@ -53,6 +59,12 @@
         <!-- Recipes will be displayed here -->
       </section>
     </main>
+
+    <section id="chatSection">
+      <textarea id="chatInput" placeholder="Ask AI for a recipe..."></textarea>
+      <button onclick="askAI()">Ask AI</button>
+      <div id="chatResponse"></div>
+    </section>
 
     <!-- Modal for Adding Recipes -->
     <div id="recipeModal" class="modal" aria-hidden="true" role="dialog">

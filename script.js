@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
 import { getDatabase, ref, set, get, push, update, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBFSftvspdDdcO8FM5U95BoCvstf0bDk4Y",
@@ -16,6 +17,37 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const analytics = getAnalytics(app);
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
+
+// Авторизация через Google
+document.getElementById("loginBtn").addEventListener("click", () => {
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            alert(`Welcome, ${result.user.displayName}!`);
+        })
+        .catch((error) => {
+            console.error("Login error:", error);
+        });
+});
+
+// Выход из аккаунта
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    signOut(auth).then(() => {
+        alert("Logged out!");
+    });
+});
+
+// Проверка аутентификации пользователя
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById("loginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "block";
+    } else {
+        document.getElementById("loginBtn").style.display = "block";
+        document.getElementById("logoutBtn").style.display = "none";
+    }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     const addRecipeBtn = document.getElementById("addRecipeBtn");
@@ -193,4 +225,62 @@ function showFavorites() {
             });
         }
     });
+}
+
+function saveRecipe(id = null) {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Please log in to add recipes!");
+        return;
+    }
+
+    const title = document.getElementById("recipeTitle").value;
+    const ingredients = document.getElementById("recipeIngredients").value;
+    const instructions = document.getElementById("recipeInstructions").value;
+
+    if (!title || !ingredients || !instructions) {
+        alert("Please fill out all fields.");
+        return;
+    }
+
+    const recipeRef = id ? ref(db, "users/" + user.uid + "/recipes/" + id) : push(ref(db, "users/" + user.uid + "/recipes"));
+    
+    set(recipeRef, {
+        id: id || recipeRef.key,
+        title,
+        ingredients,
+        instructions,
+        owner: user.uid
+    }).then(() => {
+        alert(id ? "Recipe updated successfully!" : "Recipe added successfully!");
+        closeModal();
+        loadRecipes();
+    });
+}
+
+async function askAI() {
+    const inputText = document.getElementById("chatInput").value;
+    if (!inputText) {
+        alert("Please enter a question!");
+        return;
+    }
+
+    const apiKey = "YOUR_OPENAI_API_KEY";
+    const url = "https://api.openai.com/v1/completions";
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "text-davinci-003",
+            prompt: `Suggest a recipe using these ingredients: ${inputText}`,
+            max_tokens: 100
+        })
+    });
+
+    const data = await response.json();
+    document.getElementById("chatResponse").innerText = data.choices[0].text;
 }
