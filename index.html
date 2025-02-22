@@ -3,48 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Recipe Organizer</title>
+    <title>Recipe Hub</title>
     <link rel="stylesheet" href="style.css" />
     <script defer type="module" src="script.js"></script>
   </head>
   <body>
-    <div id="loginPage">
-      <h1>Welcome to Recipe Organizer</h1>
-      <button id="loginBtn">Sign in with Google</button>
-    </div>
+    <header>
+      <h1>Recipe Hub</h1>
+      <button id="logoutBtn">Sign Out</button>
+    </header>
 
-    <div id="mainPage" style="display: none">
-      <header>
-        <h1>Recipe Organizer</h1>
-        <button id="logoutBtn">Logout</button>
-      </header>
-
-      <main>
+    <main>
+      <!-- AI Assistant -->
+      <section id="aiAssistant">
+        <h2>AI Assistant</h2>
         <input
           type="text"
-          id="searchInput"
-          placeholder="Search recipes..."
-          onkeyup="searchRecipes()"
-        />
-        <select id="filterCategory" onchange="filterRecipes()">
-          <option value="all">All</option>
-          <option value="breakfast">Breakfast</option>
-          <option value="lunch">Lunch</option>
-          <option value="dinner">Dinner</option>
-          <option value="dessert">Dessert</option>
-        </select>
-        <button id="showFavoritesBtn">Show Favorites</button>
-        <section id="recipeList"></section>
-      </main>
-
-      <section id="chatSection">
-        <textarea
           id="chatInput"
           placeholder="Ask AI for a recipe..."
-        ></textarea>
+        />
         <button id="askAIBtn">Ask AI</button>
         <div id="chatResponse"></div>
       </section>
-    </div>
+
+      <!-- Recipe Form -->
+      <section id="recipeForm">
+        <h2>Add a New Recipe</h2>
+        <input type="text" id="recipeTitle" placeholder="Recipe Name" />
+        <textarea id="recipeIngredients" placeholder="Ingredients"></textarea>
+        <textarea id="recipeInstructions" placeholder="Instructions"></textarea>
+        <button id="saveRecipe">Save Recipe</button>
+      </section>
+
+      <!-- Recipe List -->
+      <section id="recipeListContainer">
+        <h2>Saved Recipes</h2>
+        <div id="recipeList"></div>
+      </section>
+    </main>
   </body>
 </html>

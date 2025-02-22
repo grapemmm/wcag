@@ -56,37 +56,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Подключаем обработчики кнопок после загрузки DOM
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("showFavoritesBtn").addEventListener("click", showFavorites);
-    document.getElementById("askAIBtn").addEventListener("click", askAI);
+// Сохранение рецепта
+document.getElementById("saveRecipe").addEventListener("click", () => {
+    const title = document.getElementById("recipeTitle").value;
+    const ingredients = document.getElementById("recipeIngredients").value;
+    const instructions = document.getElementById("recipeInstructions").value;
+
+    const recipeRef = push(ref(db, "recipes"));
+    set(recipeRef, { title, ingredients, instructions }).then(loadRecipes);
 });
 
+// Загрузка рецептов
 function loadRecipes() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    get(ref(db, `users/${user.uid}/recipes`)).then((snapshot) => {
+    get(ref(db, "recipes")).then((snapshot) => {
         const recipeList = document.getElementById("recipeList");
         recipeList.innerHTML = "";
 
-        if (snapshot.exists()) {
-            snapshot.forEach((childSnapshot) => {
-                const recipe = childSnapshot.val();
-                const recipeDiv = document.createElement("div");
-                recipeDiv.classList.add("recipe-item");
-                recipeDiv.innerHTML = `
-                    <h3>${recipe.title}</h3>
-                    <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
-                    <p><strong>Instructions:</strong> ${recipe.instructions}</p>
-                    <button onclick="editRecipe('${recipe.id}')">Edit</button>
-                    <button onclick="deleteRecipe('${recipe.id}')">Delete</button>
-                    <button onclick="toggleFavorite('${recipe.id}')">${recipe.favorite ? "⭐ Remove" : "☆ Add to favorites"}</button>
-                `;
-                recipeList.appendChild(recipeDiv);
-            });
-        } else {
-            recipeList.innerHTML = "<p>No recipes found.</p>";
-        }
+        snapshot.forEach((childSnapshot) => {
+            const recipe = childSnapshot.val();
+            const div = document.createElement("div");
+            div.classList.add("recipe-card");
+            div.innerHTML = `
+                <h3>${recipe.title}</h3>
+                <p>${recipe.ingredients}</p>
+                <p>${recipe.instructions}</p>
+            `;
+            recipeList.appendChild(div);
+        });
     });
 }
+loadRecipes();
