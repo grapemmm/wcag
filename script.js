@@ -89,25 +89,69 @@ document.getElementById("saveRecipe").addEventListener("click", () => {
 });
 
 // ✅ Загрузка рецептов из Realtime Database
+// ✅ Функция загрузки рецептов с кнопками "Удалить" и "Сохранить"
 function loadRecipes() {
     get(ref(database, "recipes")).then((snapshot) => {
         const recipeList = document.getElementById("recipeList");
-        recipeList.innerHTML = "";
+        recipeList.innerHTML = ""; // Очищаем перед загрузкой
 
         snapshot.forEach((childSnapshot) => {
             const recipe = childSnapshot.val();
+            const recipeId = childSnapshot.key; // Получаем уникальный ID рецепта
+
             const div = document.createElement("div");
             div.classList.add("recipe-card");
             div.innerHTML = `
-                <h3>${recipe.title}</h3>
-                <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
-                <p><strong>Instructions:</strong> ${recipe.instructions}</p>
+                <h3 contenteditable="true" id="title-${recipeId}">${recipe.title}</h3>
+                <p><strong>Ingredients:</strong> <span contenteditable="true" id="ingredients-${recipeId}">${recipe.ingredients}</span></p>
+                <p><strong>Instructions:</strong> <span contenteditable="true" id="instructions-${recipeId}">${recipe.instructions}</span></p>
+                <button class="save-btn" onclick="saveRecipe('${recipeId}')">Save</button>
+                <button class="delete-btn" onclick="deleteRecipe('${recipeId}')">Delete</button>
             `;
             recipeList.appendChild(div);
         });
     });
 }
-loadRecipes();
+
+// ✅ Функция удаления рецепта
+function deleteRecipe(recipeId) {
+    if (confirm("Are you sure you want to delete this recipe?")) {
+        remove(ref(database, `recipes/${recipeId}`))
+            .then(() => {
+                alert("Recipe deleted successfully!");
+                loadRecipes(); // Перезагружаем список
+            })
+            .catch((error) => {
+                console.error("Delete error:", error);
+                alert("Failed to delete the recipe.");
+            });
+    }
+}
+
+// ✅ Функция сохранения изменений в рецепте
+function saveRecipe(recipeId) {
+    const updatedTitle = document.getElementById(`title-${recipeId}`).innerText;
+    const updatedIngredients = document.getElementById(`ingredients-${recipeId}`).innerText;
+    const updatedInstructions = document.getElementById(`instructions-${recipeId}`).innerText;
+
+    update(ref(database, `recipes/${recipeId}`), {
+        title: updatedTitle,
+        ingredients: updatedIngredients,
+        instructions: updatedInstructions,
+    })
+        .then(() => {
+            alert("Recipe updated successfully!");
+            loadRecipes(); // Перезагружаем список
+        })
+        .catch((error) => {
+            console.error("Update error:", error);
+            alert("Failed to update the recipe.");
+        });
+}
+
+// ✅ Загружаем рецепты при загрузке страницы
+document.addEventListener("DOMContentLoaded", loadRecipes);
+
 
 // ✅ Подключение OpenAI API для генерации рецептов
 document.getElementById("askAIBtn").addEventListener("click", async () => {
