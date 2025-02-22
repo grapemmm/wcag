@@ -20,41 +20,41 @@ const db = getDatabase(app);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
-// Проверка аутентификации пользователя
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("mainPage").style.display = "block";
-        loadRecipes();
-    } else {
-        document.getElementById("loginPage").style.display = "block";
-        document.getElementById("mainPage").style.display = "none";
-    }
-});
+// // Проверка аутентификации пользователя
+// onAuthStateChanged(auth, (user) => {
+//     if (user) {
+//         document.getElementById("loginPage").style.display = "none";
+//         document.getElementById("mainPage").style.display = "block";
+//         loadRecipes();
+//     } else {
+//         document.getElementById("loginPage").style.display = "block";
+//         document.getElementById("mainPage").style.display = "none";
+//     }
+// });
 
-// Авторизация через Google
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("loginBtn").addEventListener("click", () => {
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                console.log("User signed in:", result.user);
-                alert(`Welcome, ${result.user.displayName}!`);
-            })
-            .catch((error) => {
-                console.error("Login error:", error.message);
-                alert("Login failed: " + error.message);
-            });
-    });
+// // Авторизация через Google
+// document.addEventListener("DOMContentLoaded", () => {
+//     document.getElementById("loginBtn").addEventListener("click", () => {
+//         signInWithPopup(auth, provider)
+//             .then((result) => {
+//                 console.log("User signed in:", result.user);
+//                 alert(`Welcome, ${result.user.displayName}!`);
+//             })
+//             .catch((error) => {
+//                 console.error("Login error:", error.message);
+//                 alert("Login failed: " + error.message);
+//             });
+//     });
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        signOut(auth).then(() => {
-            alert("Logged out!");
-        }).catch((error) => {
-            console.error("Logout error:", error.message);
-            alert("Logout failed: " + error.message);
-        });
-    });
-});
+//     document.getElementById("logoutBtn").addEventListener("click", () => {
+//         signOut(auth).then(() => {
+//             alert("Logged out!");
+//         }).catch((error) => {
+//             console.error("Logout error:", error.message);
+//             alert("Logout failed: " + error.message);
+//         });
+//     });
+// });
 
 // Подключаем обработчики кнопок после загрузки DOM
 document.addEventListener("DOMContentLoaded", () => {
