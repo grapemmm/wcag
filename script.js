@@ -26,76 +26,30 @@ onAuthStateChanged(auth, (user) => {
 });
 
 // Выход из аккаунта
-document.getElementById("logoutBtn").addEventListener("click", () => {
-    signOut(auth).then(() => {
-        window.location.href = "index.html";
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        }).catch((error) => {
+            console.error("Logout error:", error.message);
+            alert("Logout failed: " + error.message);
+        });
     });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadRecipes(); // Теперь вызываем после загрузки DOM
+// Сохранение рецепта
+document.getElementById("saveRecipe").addEventListener("click", () => {
+    const title = document.getElementById("recipeTitle").value;
+    const ingredients = document.getElementById("recipeIngredients").value;
+    const instructions = document.getElementById("recipeInstructions").value;
 
-    // Сохранение рецепта
-    document.getElementById("saveRecipe").addEventListener("click", () => {
-        const title = document.getElementById("recipeTitle").value;
-        const ingredients = document.getElementById("recipeIngredients").value;
-        const instructions = document.getElementById("recipeInstructions").value;
+    if (!title || !ingredients || !instructions) {
+        alert("Please fill out all fields.");
+        return;
+    }
 
-        if (!title || !ingredients || !instructions) {
-            alert("Please fill out all fields.");
-            return;
-        }
-
-        const recipeRef = push(ref(db, "recipes"));
-        set(recipeRef, { title, ingredients, instructions }).then(loadRecipes);
-    });
-
-    // Подключение OpenAI API для генерации рецептов
-    document.getElementById("askAIBtn").addEventListener("click", async () => {
-        const inputText = document.getElementById("chatInput").value;
-        if (!inputText) {
-            alert("Please enter a question!");
-            return;
-        }
-
-        const apiKey = "YOUR_OPENAI_API_KEY";
-        const url = "https://api.openai.com/v1/completions";
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "text-davinci-003",
-                    prompt: `Generate a recipe for: ${inputText}\n\nFormat:\nRecipe Name: \nIngredients: \nInstructions: `,
-                    max_tokens: 150
-                })
-            });
-
-            const data = await response.json();
-            if (!data.choices || !data.choices[0] || !data.choices[0].text) {
-                alert("AI response error. Try again.");
-                return;
-            }
-
-            const aiResponse = data.choices[0].text.split("\n").filter(line => line.trim() !== "");
-
-            // Проверяем, есть ли все нужные элементы в ответе
-            if (aiResponse.length >= 3) {
-                document.getElementById("recipeTitle").value = aiResponse[0].replace("Recipe Name: ", "");
-                document.getElementById("recipeIngredients").value = aiResponse[1].replace("Ingredients: ", "");
-                document.getElementById("recipeInstructions").value = aiResponse[2].replace("Instructions: ", "");
-            } else {
-                alert("AI did not return a valid recipe. Try again.");
-            }
-        } catch (error) {
-            console.error("Error with AI request:", error);
-            alert("Failed to get response from AI.");
-        }
-    });
+    const recipeRef = push(ref(db, "recipes"));
+    set(recipeRef, { title, ingredients, instructions }).then(loadRecipes);
 });
 
 // Загрузка рецептов
@@ -117,3 +71,50 @@ function loadRecipes() {
         });
     });
 }
+loadRecipes();
+
+// Подключение OpenAI API для генерации рецептов
+document.getElementById("askAIBtn").addEventListener("click", async () => {
+    const inputText = document.getElementById("chatInput").value;
+    if (!inputText) {
+        alert("Please enter a question!");
+        return;
+    }
+
+    const apiKey = "YOUR_OPENAI_API_KEY";
+    const url = "https://api.openai.com/v1/completions";
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "text-davinci-003",
+                prompt: `Generate a recipe for: ${inputText}\n\nFormat:\nRecipe Name: \nIngredients: \nInstructions: `,
+                max_tokens: 150
+            })
+        });
+
+        const data = await response.json();
+        if (!data.choices || !data.choices[0] || !data.choices[0].text) {
+            alert("AI response error. Try again.");
+            return;
+        }
+
+        const aiResponse = data.choices[0].text.split("\n").filter(line => line.trim() !== "");
+
+        if (aiResponse.length >= 3) {
+            document.getElementById("recipeTitle").value = aiResponse[0].replace("Recipe Name: ", "");
+            document.getElementById("recipeIngredients").value = aiResponse[1].replace("Ingredients: ", "");
+            document.getElementById("recipeInstructions").value = aiResponse[2].replace("Instructions: ", "");
+        } else {
+            alert("AI did not return a valid recipe. Try again.");
+        }
+    } catch (error) {
+        console.error("Error with AI request:", error);
+        alert("Failed to get response from AI.");
+    }
+});
