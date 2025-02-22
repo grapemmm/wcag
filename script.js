@@ -62,6 +62,11 @@ document.getElementById("saveRecipe").addEventListener("click", () => {
     const ingredients = document.getElementById("recipeIngredients").value;
     const instructions = document.getElementById("recipeInstructions").value;
 
+    if (!title || !ingredients || !instructions) {
+        alert("Please fill out all fields.");
+        return;
+    }
+
     const recipeRef = push(ref(db, "recipes"));
     set(recipeRef, { title, ingredients, instructions }).then(loadRecipes);
 });
@@ -78,11 +83,43 @@ function loadRecipes() {
             div.classList.add("recipe-card");
             div.innerHTML = `
                 <h3>${recipe.title}</h3>
-                <p>${recipe.ingredients}</p>
-                <p>${recipe.instructions}</p>
+                <p><strong>Ingredients:</strong> ${recipe.ingredients}</p>
+                <p><strong>Instructions:</strong> ${recipe.instructions}</p>
             `;
             recipeList.appendChild(div);
         });
     });
 }
 loadRecipes();
+
+// Подключение OpenAI API для генерации рецептов
+document.getElementById("askAIBtn").addEventListener("click", async () => {
+    const inputText = document.getElementById("chatInput").value;
+    if (!inputText) {
+        alert("Please enter a question!");
+        return;
+    }
+
+    const apiKey = "YOUR_OPENAI_API_KEY";
+    const url = "https://api.openai.com/v1/completions";
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "text-davinci-003",
+            prompt: `Generate a recipe for: ${inputText}\n\nFormat:\nRecipe Name: \nIngredients: \nInstructions: `,
+            max_tokens: 150
+        })
+    });
+
+    const data = await response.json();
+    const aiResponse = data.choices[0].text.split("\n");
+    
+    document.getElementById("recipeTitle").value = aiResponse[1].replace("Recipe Name: ", "");
+    document.getElementById("recipeIngredients").value = aiResponse[2].replace("Ingredients: ", "");
+    document.getElementById("recipeInstructions").value = aiResponse[3].replace("Instructions: ", "");
+});

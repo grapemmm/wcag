@@ -17,12 +17,14 @@
       <!-- AI Assistant -->
       <section id="aiAssistant">
         <h2>AI Assistant</h2>
-        <input
-          type="text"
-          id="chatInput"
-          placeholder="Ask AI for a recipe..."
-        />
-        <button id="askAIBtn">Ask AI</button>
+        <div class="input-group">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Ask AI for a recipe..."
+          />
+          <button id="askAIBtn">Ask AI</button>
+        </div>
         <div id="chatResponse"></div>
       </section>
 
@@ -30,8 +32,13 @@
       <section id="recipeForm">
         <h2>Add a New Recipe</h2>
         <input type="text" id="recipeTitle" placeholder="Recipe Name" />
-        <textarea id="recipeIngredients" placeholder="Ingredients"></textarea>
-        <textarea id="recipeInstructions" placeholder="Instructions"></textarea>
+        <div class="input-row">
+          <textarea id="recipeIngredients" placeholder="Ingredients"></textarea>
+          <textarea
+            id="recipeInstructions"
+            placeholder="Instructions"
+          ></textarea>
+        </div>
         <button id="saveRecipe">Save Recipe</button>
       </section>
 
