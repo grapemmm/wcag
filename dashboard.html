@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Hub</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" defer src="script.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Recipe Hub</h1>
+      <div class="auth-buttons">
+        <button id="loginBtn">Sign in with Google</button>
+        <button id="logoutBtn" style="display: none">Sign Out</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- AI Assistant -->
+      <section id="aiAssistant">
+        <h2>AI Assistant</h2>
+        <div class="input-group">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Ask AI for a recipe..."
+          />
+          <button id="askAIBtn">Ask AI</button>
+        </div>
+        <div id="chatResponse"></div>
+      </section>
+
+      <!-- Recipe Form -->
+      <section id="recipeForm">
+        <h2>Add a New Recipe</h2>
+        <input type="text" id="recipeTitle" placeholder="Recipe Name" />
+        <div class="input-row">
+          <textarea id="recipeIngredients" placeholder="Ingredients"></textarea>
+          <textarea
+            id="recipeInstructions"
+            placeholder="Instructions"
+          ></textarea>
+        </div>
+        <button id="saveRecipe">Save Recipe</button>
+      </section>
+
+      <!-- Recipe List -->
+      <section id="recipeListContainer">
+        <h2>Saved Recipes</h2>
+        <div id="recipeList"></div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-import { getDatabase, ref, set, get, push } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+import { getDatabase, ref, set, get, push, update, remove } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 import { doc, getDoc, getFirestore } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
@@ -73,53 +73,23 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     });
 });
 
-// ✅ Сохранение рецепта в Realtime Database
-document.getElementById("saveRecipe").addEventListener("click", () => {
-    const title = document.getElementById("recipeTitle").value;
-    const ingredients = document.getElementById("recipeIngredients").value;
-    const instructions = document.getElementById("recipeInstructions").value;
-
-    if (!title || !ingredients || !instructions) {
-        alert("Please fill out all fields.");
+// ✅ Функция удаления рецепта (исправленная)
+function deleteRecipe(recipeId) {
+    if (!recipeId) {
+        console.error("Error: recipeId is undefined");
         return;
     }
 
-    const recipeRef = push(ref(database, "recipes"));
-    set(recipeRef, { title, ingredients, instructions }).then(loadRecipes);
-});
-
-// ✅ Загрузка рецептов из Realtime Database
-// ✅ Функция загрузки рецептов с кнопками "Удалить" и "Сохранить"
-function loadRecipes() {
-    get(ref(database, "recipes")).then((snapshot) => {
-        const recipeList = document.getElementById("recipeList");
-        recipeList.innerHTML = ""; // Очищаем перед загрузкой
-
-        snapshot.forEach((childSnapshot) => {
-            const recipe = childSnapshot.val();
-            const recipeId = childSnapshot.key; // Получаем уникальный ID рецепта
-
-            const div = document.createElement("div");
-            div.classList.add("recipe-card");
-            div.innerHTML = `
-                <h3 contenteditable="true" id="title-${recipeId}">${recipe.title}</h3>
-                <p><strong>Ingredients:</strong> <span contenteditable="true" id="ingredients-${recipeId}">${recipe.ingredients}</span></p>
-                <p><strong>Instructions:</strong> <span contenteditable="true" id="instructions-${recipeId}">${recipe.instructions}</span></p>
-                <button class="save-btn" onclick="saveRecipe('${recipeId}')">Save</button>
-                <button class="delete-btn" onclick="deleteRecipe('${recipeId}')">Delete</button>
-            `;
-            recipeList.appendChild(div);
-        });
-    });
-}
-
-// ✅ Функция удаления рецепта
-function deleteRecipe(recipeId) {
     if (confirm("Are you sure you want to delete this recipe?")) {
-        remove(ref(database, `recipes/${recipeId}`))
+        const recipeRef = ref(database, `recipes/${recipeId}`); // ✅ Создаём ссылку на рецепт
+
+        remove(recipeRef) // ✅ Используем `remove(ref(database, ...))`
             .then(() => {
+                const recipeElement = document.getElementById(`recipe-${recipeId}`);
+                if (recipeElement) {
+                    recipeElement.remove(); // ✅ Удаляем из UI
+                }
                 alert("Recipe deleted successfully!");
-                loadRecipes(); // Перезагружаем список
             })
             .catch((error) => {
                 console.error("Delete error:", error);
@@ -128,29 +98,84 @@ function deleteRecipe(recipeId) {
     }
 }
 
-// ✅ Функция сохранения изменений в рецепте
-function saveRecipe(recipeId) {
-    const updatedTitle = document.getElementById(`title-${recipeId}`).innerText;
-    const updatedIngredients = document.getElementById(`ingredients-${recipeId}`).innerText;
-    const updatedInstructions = document.getElementById(`instructions-${recipeId}`).innerText;
+// ✅ Функция загрузки рецептов (без кнопки Save)
+function loadRecipes() {
+    get(ref(database, "recipes")).then((snapshot) => {
+        const recipeList = document.getElementById("recipeList");
+        recipeList.innerHTML = ""; // Очищаем перед загрузкой
 
-    update(ref(database, `recipes/${recipeId}`), {
-        title: updatedTitle,
-        ingredients: updatedIngredients,
-        instructions: updatedInstructions,
-    })
-        .then(() => {
-            alert("Recipe updated successfully!");
-            loadRecipes(); // Перезагружаем список
-        })
-        .catch((error) => {
-            console.error("Update error:", error);
-            alert("Failed to update the recipe.");
+        snapshot.forEach((childSnapshot) => {
+            const recipe = childSnapshot.val();
+            const recipeId = childSnapshot.key; // Уникальный ID рецепта
+
+            const div = document.createElement("div");
+            div.classList.add("recipe-card");
+            div.id = `recipe-${recipeId}`; // Добавляем ID для удаления без перезагрузки
+
+            div.innerHTML = `
+                <h3 id="title-${recipeId}">${recipe.title}</h3>
+                <p><strong>Ingredients:</strong> <span id="ingredients-${recipeId}">${recipe.ingredients}</span></p>
+                <p><strong>Instructions:</strong> <span id="instructions-${recipeId}">${recipe.instructions}</span></p>
+                <button class="delete-btn" data-id="${recipeId}">Delete</button>
+            `;
+            recipeList.appendChild(div);
         });
+
+        // ✅ Добавляем обработчики кликов на кнопки "Delete"
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", (event) => {
+                const recipeId = event.target.getAttribute("data-id");
+                deleteRecipe(recipeId);
+            });
+        });
+
+    }).catch((error) => {
+        console.error("Error loading recipes:", error);
+    });
 }
 
 // ✅ Загружаем рецепты при загрузке страницы
 document.addEventListener("DOMContentLoaded", loadRecipes);
+
+// ✅ Функция сохранения нового рецепта
+function saveNewRecipe() {
+    const title = document.getElementById("recipeTitle").value.trim();
+    const ingredients = document.getElementById("recipeIngredients").value.trim();
+    const instructions = document.getElementById("recipeInstructions").value.trim();
+
+    if (!title || !ingredients || !instructions) {
+        alert("Please fill out all fields.");
+        return;
+    }
+
+    // ✅ Создаём ссылку на новую запись в Firebase
+    const newRecipeRef = push(ref(database, "recipes"));
+
+    set(newRecipeRef, {
+        title,
+        ingredients,
+        instructions
+    }).then(() => {
+        alert("Recipe saved successfully!");
+        document.getElementById("recipeTitle").value = "";
+        document.getElementById("recipeIngredients").value = "";
+        document.getElementById("recipeInstructions").value = "";
+        loadRecipes(); // ✅ Перезагружаем список рецептов
+    }).catch((error) => {
+        console.error("Error saving recipe:", error);
+        alert("Failed to save the recipe.");
+    });
+}
+
+// ✅ Привязываем кнопку "Save Recipe" к обработчику
+document.addEventListener("DOMContentLoaded", () => {
+    const saveButton = document.getElementById("saveRecipe");
+    if (saveButton) {
+        saveButton.addEventListener("click", saveNewRecipe);
+    } else {
+        console.error("Error: 'Save Recipe' button not found!");
+    }
+});
 
 
 // ✅ Подключение OpenAI API для генерации рецептов
