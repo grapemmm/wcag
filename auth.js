@@ -64,6 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then((result) => {
                     console.log("🔹 Login successful:", result.user);
                     updateAuthButtons(result.user);
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    localStorage.setItem("credential", JSON.stringify(credential));
                     window.location.href = "dashboard.html"; // Redirect to dashboard
                 })
                 .catch((error) => {

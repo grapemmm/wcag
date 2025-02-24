@@ -3,7 +3,8 @@ import {
     getDatabase, ref, set, get, push, remove
 } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 import {
-    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged,
+    signInWithCredential
 } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 import {
     doc, getDoc, getFirestore
@@ -29,6 +30,29 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 let youtube_api_key = "";
+
+let storedCredential = localStorage["credential"];
+let user;
+try {
+    let credential = GoogleAuthProvider.credential(
+      JSON.parse(storedCredential).idToken,
+    );
+    let result = await signInWithCredential(auth, credential);
+    user = result.user;
+  } catch (error) {
+    if (error.message.includes("JSON.parse")) {
+      console.warn(
+        "unable to parse credential. Most probably not exists or broken",
+      );
+    } else {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      const email = error.email;
+      const credential = GoogleAuthProvider.credentialFromError(error);
+      console.error(errorCode, errorMessage, email, credential);
+    }
+  }
+console.log(user);
 
 // Fetch YouTube API Key
 async function fetchYouTubeAPIKey() {
