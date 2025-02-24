@@ -18,15 +18,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// ✅ Проверка аутентификации при загрузке страницы
-onAuthStateChanged(auth, (user) => {
+// ✅ Функция обновления кнопок
+function updateAuthButtons(user) {
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
 
     if (user) {
         console.log("🔹 Пользователь вошёл:", user.displayName);
 
-        // ✅ Показываем кнопку "Sign Out", скрываем "Sign in"
         if (loginBtn) loginBtn.style.display = "none";
         if (logoutBtn) logoutBtn.style.display = "block";
 
@@ -37,7 +36,6 @@ onAuthStateChanged(auth, (user) => {
     } else {
         console.log("🔹 Пользователь НЕ авторизован");
 
-        // ✅ Показываем "Sign in", скрываем "Sign Out"
         if (loginBtn) loginBtn.style.display = "block";
         if (logoutBtn) logoutBtn.style.display = "none";
 
@@ -46,6 +44,11 @@ onAuthStateChanged(auth, (user) => {
             window.location.href = "index.html";
         }
     }
+}
+
+// ✅ Проверка аутентификации при загрузке страницы
+onAuthStateChanged(auth, (user) => {
+    updateAuthButtons(user);
 });
 
 // ✅ Обработчик входа через Google
@@ -56,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
             signInWithPopup(auth, provider)
                 .then((result) => {
                     console.log("🔹 Вход выполнен:", result.user);
+                    updateAuthButtons(result.user);
                     window.location.href = "dashboard.html"; // ✅ Перенаправляем после входа
                 })
                 .catch((error) => {
@@ -70,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         logoutBtn.addEventListener("click", () => {
             signOut(auth).then(() => {
                 console.log("🔹 Пользователь вышел");
+                updateAuthButtons(null);
                 window.location.href = "index.html"; // ✅ Перенаправляем после выхода
             }).catch((error) => {
                 console.error("❌ Ошибка выхода:", error.message);
@@ -78,4 +83,3 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-

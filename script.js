@@ -22,6 +22,92 @@ const firestore = getFirestore(app); // Firestore
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+let youtube_api_key = "";
+
+// ✅ Получение YouTube API ключа из Firestore
+async function fetchYouTubeAPIKey() {
+    const youtubeConfig = await getDoc(doc(firestore, "Youtube", "wcag"));
+    if (!youtubeConfig.exists()) {
+        console.error("Error: YouTube API Key not found in Firestore.");
+        return null;
+    }
+    return youtubeConfig.data().key;
+}
+
+// ✅ Загружаем API-ключ YouTube
+fetchYouTubeAPIKey().then((key) => {
+    youtube_api_key = key;
+});
+
+// ✅ Функция запроса видео с YouTube
+async function fetchYouTubeVideo(query) {
+    if (!youtube_api_key) {
+        console.error("YouTube API Key is missing.");
+        return;
+    }
+
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}+recipe&type=video&key=${youtube_api_key}`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+            const videoId = data.items[0].id.videoId;
+            displayYouTubeVideo(videoId);
+        } else {
+            console.error("No video found.");
+        }
+    } catch (error) {
+        console.error("Error fetching YouTube video:", error);
+    }
+}
+
+// ✅ Функция отображения видео на странице
+function displayYouTubeVideo(videoId) {
+    const videoContainer = document.getElementById("youtubeVideo");
+    videoContainer.innerHTML = `
+        <iframe width="560" height="315" 
+            src="https://www.youtube.com/embed/${videoId}" 
+            frameborder="0" allowfullscreen>
+        </iframe>
+    `;
+}
+
+// ✅ Авторизация через Google
+document.getElementById("loginBtn").addEventListener("click", () => {
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            console.log("User signed in:", result.user);
+            alert(`Welcome, ${result.user.displayName}!`);
+        })
+        .catch((error) => {
+            console.error("Login error:", error.message);
+            alert("Login failed: " + error.message);
+        });
+});
+
+// ✅ Выход из аккаунта
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    signOut(auth).then(() => {
+        window.location.href = "index.html";
+    }).catch((error) => {
+        console.error("Logout error:", error.message);
+        alert("Logout failed: " + error.message);
+    });
+});
+
+// ✅ Добавляем обработчик кнопки "Ask AI"
+document.getElementById("askAIBtn").addEventListener("click", async () => {
+    const recipeName = document.getElementById("chatInput").value;
+    if (!recipeName) {
+        alert("Please enter a recipe name!");
+        return;
+    }
+
+    fetchYouTubeVideo(recipeName); // Запрос к YouTube API
+});
+
 // ✅ Функция получения API-ключа из Firestore
 async function fetchAPIKey() {
     const chatgptConfig = await getDoc(doc(firestore, "Config", "wcag"));
@@ -189,13 +275,22 @@ document.getElementById("askAIBtn").addEventListener("click", async () => {
         return;
     }
 
-    const inputText = document.getElementById("chatInput").value;
+    const inputText = document.getElementById("chatInput").value.trim();
     if (!inputText) {
-        alert("Please enter a question!");
+        alert("Please enter a recipe name!");
         return;
     }
 
-    const url = "https://api.openai.com/v1/completions";
+    const url = "https://api.openai.com/v1/chat/completions";
+
+    const requestBody = {
+        model: "gpt-3.5-turbo",
+        messages: [
+            { role: "system", content: "You are an AI assistant that provides recipes." },
+            { role: "user", content: `Give me a detailed recipe for: ${inputText}` }
+        ],
+        max_tokens: 200
+    };
 
     try {
         const response = await fetch(url, {
@@ -204,31 +299,88 @@ document.getElementById("askAIBtn").addEventListener("click", async () => {
                 "Authorization": `Bearer ${chatgpt_api_key}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [{ role: "user", content: `Generate a recipe for: ${inputText}` }],
-                max_tokens: 150
-            })
+            body: JSON.stringify(requestBody)
         });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("OpenAI API error:", errorData);
+            alert(`Error: ${errorData.error.message || "Failed to fetch recipe."}`);
+            return;
+        }
+
         const data = await response.json();
+        console.log("OpenAI Response:", data);
+
         if (!data.choices || !data.choices[0] || !data.choices[0].message.content) {
             alert("AI response error. Try again.");
             return;
         }
 
-        const aiResponse = JSON.parse(data.choices[0].message.content);
+        const aiResponse = data.choices[0].message.content;
 
-        if (aiResponse.response === "recipe") {
-            document.getElementById("recipeTitle").value = aiResponse.name;
-            document.getElementById("recipeIngredients").value = aiResponse.ingredients.join("\n");
-            document.getElementById("recipeInstructions").value = aiResponse.instructions.join("\n");
-        } else {
-            alert("AI did not return a valid recipe. Try again.");
-        }
+        document.getElementById("recipeTitle").value = inputText;
+        document.getElementById("recipeIngredients").value = aiResponse.split("\n").slice(1, 5).join("\n");
+        document.getElementById("recipeInstructions").value = aiResponse.split("\n").slice(5).join("\n");
+
+        // ✅ Автоматически ищем видео-рецепт на YouTube
+        fetchYouTubeVideo(inputText);
+
     } catch (error) {
         console.error("Error with AI request:", error);
         alert("Failed to get response from AI.");
     }
 });
 
+// // ✅ Функция удаления видео
+// function deleteVideo() {
+//     console.log("Deleting video...");
+//     const videoContainer = document.getElementById("videoPlayer");
+    
+//     if (videoContainer) {
+//         videoContainer.innerHTML = ""; // Полностью очищаем контейнер
+//         console.log("Video deleted successfully.");
+//     } else {
+//         console.error("Error: Video container not found!");
+//     }
+// }
+
+// // ✅ Функция загрузки YouTube видео в `videoPlayer`
+// function loadYouTubeVideo(videoId) {
+//     console.log("Loading YouTube video with ID:", videoId);
+    
+//     const videoContainer = document.getElementById("videoPlayer");
+//     if (!videoContainer) {
+//         console.error("Error: Video container element not found!");
+//         return;
+//     }
+
+//     videoContainer.innerHTML = `
+//         <div id="videoWrapper" style="text-align: center;">
+//             <iframe width="80%" height="400" 
+//                 src="https://www.youtube.com/embed/${videoId}" 
+//                 frameborder="0" allowfullscreen></iframe>
+//             <br>
+//             <button id="deleteVideoBtn" 
+//                 style="margin-top: 10px; background-color: red; 
+//                        color: white; padding: 10px 15px; 
+//                        border: none; cursor: pointer; 
+//                        border-radius: 5px; font-size: 16px;">
+//                 Delete Video
+//             </button>
+//         </div>
+//     `;
+
+//     console.log("Video embedded successfully. Waiting for delete button...");
+
+//     // ✅ Ждем появления кнопки "Delete Video" и назначаем обработчик
+//     setTimeout(() => {
+//         const deleteVideoBtn = document.getElementById("deleteVideoBtn");
+//         if (deleteVideoBtn) {
+//             deleteVideoBtn.addEventListener("click", deleteVideo);
+//             console.log("Delete Video button successfully added.");
+//         } else {
+//             console.error("Error: Delete Video button not found!");
+//         }
+//     }, 500); // Даем время DOM отрендерить кнопку
+// }

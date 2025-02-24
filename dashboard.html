@@ -6,12 +6,15 @@
     <title>Recipe Hub</title>
     <link rel="stylesheet" href="style.css" />
     <script type="module" defer src="script.js"></script>
+    <script type="module" src="auth.js"></script>
   </head>
   <body>
     <header>
       <h1>Recipe Hub</h1>
       <div class="auth-buttons">
-        <button id="loginBtn">Sign in with Google</button>
+        <button id="loginBtn" style="display: block">
+          Sign in with Google
+        </button>
         <button id="logoutBtn" style="display: none">Sign Out</button>
       </div>
     </header>
@@ -50,6 +53,18 @@
         <h2>Saved Recipes</h2>
         <div id="recipeList"></div>
       </section>
+
+      <!-- YouTube Видео -->
+      <section id="youtubeSection">
+        <h2>Video Recipe</h2>
+        <div id="youtubeVideo"></div>
+      </section>
+
+      <!-- <section id="videoContainer">
+        <h2>Video Recipe</h2>
+        <div id="videoPlayer"></div>
+        <button id="deleteVideoBtn">Delete Video</button>
+      </section> -->
     </main>
   </body>
 </html>
