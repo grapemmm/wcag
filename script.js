@@ -10,7 +10,7 @@ import {
     doc, getDoc, getFirestore
 } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
-// ✅ Firebase Configuration
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBFSftvspdDdcO8FM5U95BoCvstf0bDk4Y",
     authDomain: "wcag-a4bb1.firebaseapp.com",
@@ -179,6 +179,37 @@ document.getElementById("askAIBtn").addEventListener("click", async () => {
     }
 });
 
+// Function to Delete a Recipe
+function deleteRecipe(recipeId) {
+    const user = auth.currentUser;
+    if (!user) {
+        console.error("Error: User is not authenticated.");
+        return;
+    }
+
+    if (!recipeId) {
+        console.error("Error: Recipe ID is undefined.");
+        return;
+    }
+
+    if (confirm("Are you sure you want to delete this recipe?")) {
+        const recipeRef = ref(database, `users/${user.uid}/recipes/${recipeId}`);
+
+        remove(recipeRef)
+            .then(() => {
+                const recipeElement = document.getElementById(`recipe-${recipeId}`);
+                if (recipeElement) {
+                    recipeElement.remove();
+                }
+                alert("Recipe deleted successfully!");
+            })
+            .catch((error) => {
+                console.error("Delete error:", error);
+                alert("Failed to delete the recipe.");
+            });
+    }
+}
+
 // Load User Recipes
 function loadRecipes() {
     const user = auth.currentUser;
@@ -208,11 +239,21 @@ function loadRecipes() {
             });
 
             document.querySelectorAll(".delete-btn").forEach(button => {
-                button.addEventListener("click", event => deleteRecipe(event.target.getAttribute("data-id")));
+                button.addEventListener("click", event => {
+                    const recipeId = event.target.getAttribute("data-id");
+                    deleteRecipe(recipeId);
+                });
             });
         })
         .catch(error => console.error("Error loading recipes:", error));
 }
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        loadRecipes();
+    }
+});
+
 
 // Save New Recipe
 function saveNewRecipe() {
