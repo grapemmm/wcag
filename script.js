@@ -21,7 +21,7 @@ const firebaseConfig = {
     measurementId: "G-9RNRJ8C837",
 };
 
-// ✅ Initialize Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const firestore = getFirestore(app);
@@ -30,7 +30,7 @@ const provider = new GoogleAuthProvider();
 
 let youtube_api_key = "";
 
-// ✅ Fetch YouTube API Key
+// Fetch YouTube API Key
 async function fetchYouTubeAPIKey() {
     const youtubeConfig = await getDoc(doc(firestore, "Youtube", "wcag"));
     if (youtubeConfig.exists()) {
@@ -41,7 +41,7 @@ async function fetchYouTubeAPIKey() {
 }
 fetchYouTubeAPIKey();
 
-// ✅ Fetch YouTube Video
+// Fetch YouTube Video
 async function fetchYouTubeVideo(query) {
     if (!youtube_api_key) {
         console.error("YouTube API Key is missing.");
@@ -65,7 +65,7 @@ async function fetchYouTubeVideo(query) {
     }
 }
 
-// ✅ Display YouTube Video
+// Display YouTube Video
 function displayYouTubeVideo(videoId) {
     const videoContainer = document.getElementById("youtubeVideo");
     videoContainer.innerHTML = `
@@ -75,12 +75,12 @@ function displayYouTubeVideo(videoId) {
     document.getElementById("deleteVideoBtn").addEventListener("click", deleteVideo);
 }
 
-// ✅ Delete YouTube Video
+// Delete YouTube Video
 function deleteVideo() {
     document.getElementById("youtubeVideo").innerHTML = "";
 }
 
-// ✅ Google Authentication
+// Google Authentication
 document.getElementById("loginBtn").addEventListener("click", () => {
     signInWithPopup(auth, provider)
         .then(result => {
@@ -102,7 +102,7 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
         });
 });
 
-// ✅ Fetch OpenAI API Key
+// Fetch OpenAI API Key
 async function fetchAPIKey() {
     const chatgptConfig = await getDoc(doc(firestore, "Config", "wcag"));
     return chatgptConfig.exists() ? chatgptConfig.data().key : null;
@@ -111,7 +111,7 @@ async function fetchAPIKey() {
 let chatgpt_api_key = "";
 fetchAPIKey().then(key => chatgpt_api_key = key);
 
-// ✅ Request Recipe from AI
+// Request Recipe from AI
 document.getElementById("askAIBtn").addEventListener("click", async () => {
     if (!chatgpt_api_key) {
         alert("OpenAI API Key is missing.");
@@ -155,7 +155,7 @@ document.getElementById("askAIBtn").addEventListener("click", async () => {
     }
 });
 
-// ✅ Load User Recipes
+// Load User Recipes
 function loadRecipes() {
     const user = auth.currentUser;
     if (!user) return;
@@ -190,7 +190,7 @@ function loadRecipes() {
         .catch(error => console.error("Error loading recipes:", error));
 }
 
-// ✅ Save New Recipe
+// Save New Recipe
 function saveNewRecipe() {
     const user = auth.currentUser;
     if (!user) return;
@@ -215,4 +215,6 @@ function saveNewRecipe() {
 
 document.getElementById("saveRecipe").addEventListener("click", saveNewRecipe);
 
-onAuthStateChanged(auth, user => user && loadRecipes());
+// onAuthStateChanged(auth, user => user && loadRecipes());
+loadRecipes();
+console.log('ran load recipies');

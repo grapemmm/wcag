@@ -1,7 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+import {
+    getAuth,
+    signInWithPopup,
+    GoogleAuthProvider,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 
-// ✅ Firebase конфигурация
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBFSftvspdDdcO8FM5U95BoCvstf0bDk4Y",
     authDomain: "wcag-a4bb1.firebaseapp.com",
@@ -13,57 +19,55 @@ const firebaseConfig = {
     measurementId: "G-9RNRJ8C837",
 };
 
-// ✅ Инициализация Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// ✅ Функция обновления кнопок
+// Update authentication buttons
 function updateAuthButtons(user) {
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
 
     if (user) {
-        console.log("🔹 Пользователь вошёл:", user.displayName);
+        console.log("🔹 User signed in:", user.displayName);
 
         if (loginBtn) loginBtn.style.display = "none";
         if (logoutBtn) logoutBtn.style.display = "block";
 
-        // ✅ Перенаправляем на dashboard, если ещё на странице входа
         if (window.location.pathname.includes("index.html")) {
-            window.location.href = "dashboard.html";
+            window.location.href = "dashboard.html"; // Redirect to dashboard
         }
     } else {
-        console.log("🔹 Пользователь НЕ авторизован");
+        console.log("🔹 User is NOT signed in");
 
         if (loginBtn) loginBtn.style.display = "block";
         if (logoutBtn) logoutBtn.style.display = "none";
 
-        // ✅ Перенаправляем на `index.html`, если пользователь НЕ авторизован
         if (!window.location.pathname.includes("index.html")) {
-            window.location.href = "index.html";
+            window.location.href = "index.html"; // Redirect to login page
         }
     }
 }
 
-// ✅ Проверка аутентификации при загрузке страницы
+// Monitor authentication state
 onAuthStateChanged(auth, (user) => {
     updateAuthButtons(user);
 });
 
-// ✅ Обработчик входа через Google
+// Handle login with Google
 document.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginBtn");
     if (loginBtn) {
         loginBtn.addEventListener("click", () => {
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    console.log("🔹 Вход выполнен:", result.user);
+                    console.log("🔹 Login successful:", result.user);
                     updateAuthButtons(result.user);
-                    window.location.href = "dashboard.html"; // ✅ Перенаправляем после входа
+                    window.location.href = "dashboard.html"; // Redirect to dashboard
                 })
                 .catch((error) => {
-                    console.error("❌ Ошибка входа:", error.message);
+                    console.error("Login error:", error.message);
                     alert("Login failed: " + error.message);
                 });
         });
@@ -72,14 +76,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
-            signOut(auth).then(() => {
-                console.log("🔹 Пользователь вышел");
-                updateAuthButtons(null);
-                window.location.href = "index.html"; // ✅ Перенаправляем после выхода
-            }).catch((error) => {
-                console.error("❌ Ошибка выхода:", error.message);
-                alert("Logout failed: " + error.message);
-            });
+            signOut(auth)
+                .then(() => {
+                    console.log("🔹 User signed out");
+                    updateAuthButtons(null);
+                    window.location.href = "index.html"; // Redirect to login page
+                })
+                .catch((error) => {
+                    console.error("Logout error:", error.message);
+                    alert("Logout failed: " + error.message);
+                });
         });
     }
 });
+

@@ -1,4 +1,4 @@
-/* Общие стили */
+/* Common styles */
 * {
     margin: 0;
     padding: 0;
@@ -13,7 +13,7 @@ body {
     padding: 20px;
 }
 
-/* Заголовок */
+/* Header */
 header {
     background: #343a40;
     color: white;
@@ -37,7 +37,7 @@ header {
     background: #e63c3c;
 }
 
-/* Контейнеры */
+/* Container */
 .container {
     max-width: 900px;
     margin: 0 auto;
@@ -54,7 +54,7 @@ header {
     border-radius: 10px;
 }
 
-/* AI Ассистент */
+/* AI Assistant */
 #aiAssistant {
     background: white;
     padding: 20px;
@@ -79,7 +79,7 @@ header {
     font-size: 16px;
 }
 
-/* Кнопки */
+/* Buttons */
 button {
     background: #007bff;
     color: white;
@@ -95,7 +95,7 @@ button:hover {
     background: #0056b3;
 }
 
-/* Форма добавления рецепта */
+/* Form for adding recipe */
 #recipeForm {
     background: white;
     padding: 20px;
@@ -126,7 +126,7 @@ textarea {
     flex: 1;
 }
 
-/* Список рецептов */
+/* List of recipe */
 #recipeListContainer {
     background: white;
     padding: 20px;
@@ -169,7 +169,7 @@ textarea {
     background-color: #c82333;
 }
 
-/* Видео-рецепты */
+/* Video */
 #videoPlayer {
     margin-top: 20px;
 }
@@ -180,24 +180,7 @@ textarea {
     border-radius: 10px;
 }
 
-/* Кнопка удаления видео */
-#deleteVideoBtn {
-    margin-top: 10px;
-    background: #dc3545;
-    padding: 10px 15px;
-    border-radius: 5px;
-    color: white;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-#deleteVideoBtn:hover {
-    background: #c82333;
-}
-
-/* 📱 Адаптивные стили */
+/* 📱 Adaptive styles */
 @media (max-width: 768px) {
     .input-group {
         flex-direction: column;
@@ -248,14 +231,14 @@ textarea {
     }
 }
 
-/* Оптимизация видео под мобильные устройства */
+/* Video for mobile */
 #youtubeVideo iframe {
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
 }
 
-/* Центрирование кнопки входа */
+/* Login button */
 .login-container {
     display: flex;
     flex-direction: column;
